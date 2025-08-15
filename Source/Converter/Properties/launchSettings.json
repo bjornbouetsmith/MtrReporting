@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Converter": {
+      "commandName": "Project",
+      "commandLineArgs": "-s V:\\mtr-history -d D:\\temp\\mtr-history -o -S"
+    }
+  }
+}
