@@ -1,8 +1,12 @@
 {
   "profiles": {
-    "Converter": {
+    "Trim 0 loss": {
       "commandName": "Project",
-      "commandLineArgs": "-s V:\\mtr-history -d D:\\temp\\mtr-history -o -S"
+      "commandLineArgs": "-s V:\\mtr-history -d D:\\temp\\mtr-history -o -S -c -C -f ; -t"
+    },
+    "Single result": {
+      "commandName": "Project",
+      "commandLineArgs": "-s V:\\mtr-history -d D:\\temp\\mtr-history -o -S -c -C -f ;"
     }
   }
 }

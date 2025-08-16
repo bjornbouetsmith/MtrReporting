@@ -66,7 +66,7 @@ namespace Converter
                     ++lineNo;
                     continue;
                 }
-                
+
                 var epochString = parts[1];
                 if (!int.TryParse(epochString, CultureInfo.InvariantCulture, out var epoch))
                 {
@@ -76,14 +76,20 @@ namespace Converter
                 var timeStr = time.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
                 parts[1] = timeStr;
 
+                var lossString = parts[6];
+                if (!double.TryParse(lossString, CultureInfo.InvariantCulture, out var loss))
+                {
+                    Console.Error.WriteLine("Failed to parse:'{0}' into a double on line:{1}", lossString, lineNo);
+                }
 
+                // if configured to trim lines where packet loss is 0, then we check and skip line if its 0
+                if (_options.TrimZeroLossLines && loss < double.Epsilon)
+                {
+                    continue;
+                }
+                
                 if (_options.ConvertNumbers)
                 {
-                    var lossString = parts[6];
-                    if (!double.TryParse(lossString, CultureInfo.InvariantCulture, out var loss))
-                    {
-                        Console.Error.WriteLine("Failed to parse:'{0}' into a double on line:{1}", lossString, lineNo);
-                    }
                     lossString = loss.ToString(CultureInfo.CurrentCulture);
                     parts[6] = lossString;
                 }

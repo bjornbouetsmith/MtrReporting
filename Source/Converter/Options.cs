@@ -27,9 +27,12 @@ namespace Converter
 
         [Option('C', "convert", Default = true, HelpText = "Whether or not to convert numbers from the invariant format to current culture")]
         public bool ConvertNumbers { get; set; }
-        
+
         [Option('f', "separator", Default = ',', HelpText = "Separator char to use when writing values to the file")]
         public char FieldSeparator { get; set; }
+
+        [Option('t', "trim", HelpText = "Whether or not to trim outfiles so they only contain lines where loss is not 0")]
+        public bool TrimZeroLossLines { get; set; }
 
         public bool HasWrittenHeader { get; set; }
     }
