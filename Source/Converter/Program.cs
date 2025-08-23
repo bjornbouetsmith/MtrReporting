@@ -6,6 +6,7 @@ namespace Converter
     {
         static void Main(string[] args)
         {
+            using var errorWriter = new ErrorConsoleWriter();
             var options = Parser.Default.ParseArguments<Options>(args)
                 .Value;
 

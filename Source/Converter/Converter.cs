@@ -6,6 +6,8 @@ namespace Converter
     {
         private readonly Options _options;
         private bool _alreadyOverwritten;
+        private bool _hasWrittenHeader;
+        private CultureInfo _culture;
 
         public Converter(Options options)
         {
@@ -14,46 +16,71 @@ namespace Converter
 
         public void Run()
         {
-            Console.WriteLine("Source path:\t\t{0}", _options.SourcePath);
-            Console.WriteLine("Destination path:\t{0}", _options.DestinationPath);
-            Console.WriteLine("Using single destination file: {0}", _options.SingleDestinationFile);
+            if (!ValidateAndParseOptions()) 
+            {
+                return;
+            }
+
+            foreach (var file in Directory.GetFiles(_options.SourcePath, _options.FilePattern, SearchOption.AllDirectories))
+            {
+                ConvertFile(file);
+            }
+        }
+
+        private bool ValidateAndParseOptions()
+        {
+            Console.WriteLine("Source path:\t\t\t{0}", _options.SourcePath);
+            Console.WriteLine("Destination path:\t\t{0}", _options.DestinationPath);
+            Console.WriteLine("Using single destination file:\t{0}", _options.SingleDestinationFile);
+
+            if (_options.ConvertNumbers)
+            {
+                Console.WriteLine("Converting numbers to culture:\t{0}", _options.ConversionCulture);
+
+                try
+                {
+                    _culture = CultureInfo.GetCultureInfo(_options.ConversionCulture, true);
+                }
+                catch (Exception e)
+                {
+                    Console.Error.WriteLine(e.Message);
+                    return false;
+                }
+            }
+
             if (!Directory.Exists(_options.SourcePath))
             {
-                Console.WriteLine("Source path:{0} does not exist", _options.SourcePath);
-                return;
+                Console.Error.WriteLine("Source path:{0} does not exist", _options.SourcePath);
+                return false;
             }
 
             if (!Directory.Exists(_options.DestinationPath))
             {
                 if (!_options.CreateDestinationPath)
                 {
-                    Console.WriteLine("Destination path: '{0}' does not exist and --createdest is not specified", _options.DestinationPath);
-                    return;
+                    Console.Error.WriteLine("Destination path: '{0}' does not exist and --createdest is not specified", _options.DestinationPath);
+                    return false;
                 }
                 Directory.CreateDirectory(_options.DestinationPath);
             }
 
-            foreach (var file in Directory.GetFiles(_options.SourcePath, _options.FilePattern, SearchOption.AllDirectories))
-            {
-                ConvertFile(file);
-
-            }
+            return true;
         }
+
         /// <summary>
         /// Mtr_Version,Start_Time,Status,Host,Hop,Ip,Loss%,Snt, ,Last,Avg,Best,Wrst,StDev,
         /// </summary>
-        /// <param name="file"></param>
         private void ConvertFile(string file)
         {
             Console.WriteLine("Converting file: '{0}'", file);
             using var destination = GetDestinationFile(file);
 
             using var streamWriter = new StreamWriter(destination);
-            bool hasWrittenHeader = _options.SingleDestinationFile && _options.HasWrittenHeader;
+            bool hasWrittenHeader = _options.SingleDestinationFile && _hasWrittenHeader;
             int lineNo = 1;
             foreach (var line in File.ReadLines(file))
             {
-                var parts = line.Split(',', StringSplitOptions.None); // We want to keep empty fields
+                var parts = line.Split(','); // We want to keep empty fields
                 if (parts[0].StartsWith("Mtr_Version", StringComparison.InvariantCultureIgnoreCase))
                 {
                     if (!hasWrittenHeader)
@@ -87,17 +114,17 @@ namespace Converter
                 {
                     continue;
                 }
-                
+
                 if (_options.ConvertNumbers)
                 {
-                    lossString = loss.ToString(CultureInfo.CurrentCulture);
+                    lossString = loss.ToString(_culture);
                     parts[6] = lossString;
                 }
                 var result = string.Join(_options.FieldSeparator, parts);
                 streamWriter.WriteLine(result);
                 ++lineNo;
             }
-            _options.HasWrittenHeader = hasWrittenHeader;
+            _hasWrittenHeader = hasWrittenHeader;
         }
 
         private FileStream GetDestinationFile(string sourceFile)

@@ -27,13 +27,14 @@ namespace Converter
 
         [Option('C', "convert", Default = true, HelpText = "Whether or not to convert numbers from the invariant format to current culture")]
         public bool ConvertNumbers { get; set; }
+        
+        [Option('u', "culture", Default = "da-DK", HelpText = "Culture to convert data to if conversion is specified. Valid values are found at https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c 4th column: Language tag")]
+        public string ConversionCulture { get; set; }
 
         [Option('f', "separator", Default = ',', HelpText = "Separator char to use when writing values to the file")]
         public char FieldSeparator { get; set; }
 
         [Option('t', "trim", HelpText = "Whether or not to trim outfiles so they only contain lines where loss is not 0")]
         public bool TrimZeroLossLines { get; set; }
-
-        public bool HasWrittenHeader { get; set; }
     }
 }
